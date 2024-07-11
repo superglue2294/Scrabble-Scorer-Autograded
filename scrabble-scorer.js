@@ -35,17 +35,29 @@ function oldScrabbleScorer(word) {
 function initialPrompt() {
    console.log("Let's play some Scrabble!\n");
 
-   const userInput = input.question("Enter a word to score: ");
+   let userInput = input.question("Enter a word to score: ");
 
-   return userInput;
+   while (true) {
+      if (userInput === userInput.match(/[a-zA-Z\s]/g).join('')) {
+         return userInput;
+      } else {
+         userInput = input.question("Invalid input. Enter a word (with letters only) to score: ");
+      }
+   }
 };
 
 let newPointStructure = transform(oldPointStructure);
 
 let simpleScorer = (word) => {
    word = word.toUpperCase().trim();
+   let points = 0;
 
-   let points = word.length;
+   if (word.includes(' ')) {
+      word = word.replaceAll(/\s/g, '');
+      points = word.length;
+   } else {
+      points = word.length;
+   }
 
    return points;
 };
@@ -55,8 +67,10 @@ let vowelBonusScorer = (word) => {
    let points = 0;
 
    for (let i = 0; i < word.length; i++) {
-      if (word[i] === 'A' || word[i] === 'E' || word[i] === 'I' || word[i] === 'O' || word[i] === 'U') {
+      if (word[i].match(/[AEIOU]/g)) {
          points += 3;
+      } else if (word[i] === ' ') {
+         points += 0;
       } else {
          points++;
       }
@@ -71,7 +85,9 @@ let scrabbleScorer = (word) => {
 
    for (let i = 0; i < word.length; i++) {
 
-      points += newPointStructure[word[i]];
+      if (!(word[i] === ' ')) {
+         points += newPointStructure[word[i]];
+      }
 
    }
 
@@ -98,13 +114,14 @@ const scoringAlgorithms = [
 
 function scorerPrompt(word) {
    console.log(`Which scoring algorithm would you like to use?\n\n0 - ${scoringAlgorithms[0].name}: ${scoringAlgorithms[0].description}\n1 - ${scoringAlgorithms[1].name}: ${scoringAlgorithms[1].description}\n2 - ${scoringAlgorithms[2].name}: ${scoringAlgorithms[2].description}`);
+   
+   let userInput = input.question("Enter 0, 1, or 2: ");
 
    while (true) {
-      let userInput = input.question("Enter 0, 1, or 2: ");
-      userInput = Number(userInput);
-
-      if (userInput === 0 || userInput === 1 || userInput === 2) {
-         return scoringAlgorithms[userInput].scorerFunction(word);
+      if (userInput.match(/[0-2]/g)) {
+         return scoringAlgorithms[Number(userInput)].scorerFunction(word);
+      } else {
+         userInput = input.question("Invalid input. Enter 0, 1, or 2: ");
       }
    }
 }
